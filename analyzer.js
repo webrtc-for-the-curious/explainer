@@ -4,12 +4,6 @@
 
 const NewLineRegex = /\r?\n/;
 const DescriptionLineRegex = /([^=]*)=(.*)/;
-const PrimaryKeys = "vostm";
-const SecondaryKeys = {
-    null: "",
-    "m": "acibk",
-    "t": "ar",
-};
 
 let sdpInputTimer;
 let sdpDescriptions = {};
@@ -42,17 +36,10 @@ function parseSDP() {
         }
 
         let [, key, value] = line.match(DescriptionLineRegex);
-        if (PrimaryKeys.includes(key)) {
-            // Create new section and save the section key
+        if (key == "m" || sections.length == 0) {
             sections.push([ [index, key, value] ]);
-            currSectionKey = key;
-        } else if (SecondaryKeys[currSectionKey]?.includes(key)) {
-            // Append to the last section
-            sections.at(-1).push([index, key, value]);
         } else {
-            // An unexpected key was found. Do we need to update
-            // the primary or secondary keys?
-            console.log(`discarding line ${index}, ${line}`);
+            sections.at(-1).push([index, key, value]);
         }
     }
 
