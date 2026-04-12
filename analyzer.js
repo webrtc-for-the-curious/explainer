@@ -72,12 +72,14 @@ function onSDPInput() {
 
 function onSDPLineClick(e) {
     let sdpInput = document.getElementById("sdp-input");
-    const rect = sdpInput.getBoundingClientRect();
+    if (sdpInput.value.length == 0) {
+        return
+    }
 
     // The line-height must be set in css.
     let style = window.getComputedStyle(sdpInput);
     const lineHeight = parseInt(style.lineHeight, 10);
-
+    const rect = sdpInput.getBoundingClientRect();
     let linepos = Math.floor((e.clientY - rect.top) / lineHeight);
     if (displayedLine != linepos) {
         displayedLine = linepos;
@@ -85,3 +87,6 @@ function onSDPLineClick(e) {
         console.dir(description);
     }
 }
+
+window.onSDPInput = onSDPInput;
+window.onSDPLineClick = onSDPLineClick;
