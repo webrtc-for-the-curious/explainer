@@ -11,15 +11,15 @@ let displayedLine;
 
 class Description {
     constructor(lines) {
-        this.lines = structuredClone(lines)
+        this.lines = structuredClone(lines);
     }
 
     firstLine() {
-        return this.lines[0][0]
+        return this.lines[0][0];
     }
 
     toString() {
-        return this.lines
+        return this.lines.map((line) => `${line[0]}: ${line[1]}=${line[2]}`).join("\n");
     }
 };
 
@@ -85,7 +85,7 @@ function onSDPLineClick(e) {
     if (displayedLine != linepos) {
         displayedLine = linepos;
         let description = mapLineToDescription(linepos);
-        console.dir(description);
+        console.log(`Description = ${description}`);
     }
 }
 
