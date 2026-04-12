@@ -25,13 +25,12 @@ class Description {
 
 function parseSDP() {
     let sdp = document.getElementById("sdp-input").value;
-    console.log("parsing SDP");
 
     let sections = [];
     let currSectionKey = null;
     for (const [index, line] of sdp.split(NewLineRegex).entries()) {
         if (line.length == 0) {
-            console.log(`line ${index} empty`);
+            console.debug(`line ${index} empty`);
             continue;
         }
 
@@ -48,6 +47,8 @@ function parseSDP() {
         let d = new Description(s);
         sdpDescriptions[d.firstLine()] = d;
     }
+
+    console.debug("Done parsing SDP");
 }
 
 function mapLineToDescription(line) {
