@@ -14,6 +14,8 @@
             text-align: left;
             overflow: auto;
             field-sizing: content;
+            line-height: 15px;
+            font-size: 15px;
             width: 100ch;
             min-height: 10lh;
             background-color: transparent;
@@ -24,6 +26,6 @@
 </head>
 <body>
     <h1>SDP Explainer</h1>
-    <textarea id="sdp-input" name="sdp" placeholder="Paste your SDP here..." oninput="onSDPInput()"></textarea>
+    <textarea id="sdp-input" name="sdp" placeholder="Paste your SDP here..." oninput="onSDPInput()" onclick="onSDPLineClick(event)"></textarea>
 </body>
 </html>
