@@ -1,3 +1,4 @@
+import { parseSDP, mapLineToDescription } from './model.js';
 
 let lineHeight;
 let sdpInputTimer;
@@ -8,7 +9,13 @@ function onSDPInput() {
     // clear previous timer
     clearTimeout(sdpInputTimer);
     // start new timer
-    sdpInputTimer = setTimeout(() => { sdpDescriptions = parseSDP(); }, 700);
+    sdpInputTimer = setTimeout(() => { 
+        try {
+            sdpDescriptions = parseSDP();
+        } catch (error) {
+            sdpDescriptions = {}
+        }
+    }, 700);
 }
 
 function onSDPLineClick(e) {

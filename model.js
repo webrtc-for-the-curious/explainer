@@ -19,7 +19,7 @@ class Description {
     }
 };
 
-function parseSDP() {
+export function parseSDP() {
     let sdp = document.getElementById("sdp-input").value;
 
     if (sdp.length == 0) {
@@ -33,28 +33,32 @@ function parseSDP() {
             continue;
         }
 
-        let [, key, value] = line.match(DescriptionLineRegex);
-        if (key == "m" || sections.length == 0) {
-            sections.push([ [index, key, value] ]);
-        } else {
-            sections.at(-1).push([index, key, value]);
+        try {
+            let [, key, value] = line.match(DescriptionLineRegex);
+            if (key == "m" || sections.length == 0) {
+                sections.push([ [index, key, value] ]);
+            } else {
+                sections.at(-1).push([index, key, value]);
+            }
+        } catch (error) {
+            console.log(`error parsing line ${index}`)
         }
     }
 
     let descriptions = [];
-    for (const s of sections) {
+    for (const s of (sections || [])) {
         let d = new Description(s);
         descriptions[d.firstLine()] = d;
     }
 
-    console.debug("Done parsing SDP");
+    console.log(`Done parsing SDP, found ${sections.length} sections`);
 
     return descriptions;
 }
 
-function mapLineToDescription(line) {
+export function mapLineToDescription(descriptions, line) {
     let prevDescription;
-    for (const [key, description] of Object.entries(sdpDescriptions)) {
+    for (const [key, description] of Object.entries(descriptions)) {
         if (line == key) {
             return description;
         } else if (line < key) {
