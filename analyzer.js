@@ -93,7 +93,7 @@ function onSDPLineClick(e) {
 
 window.addEventListener('load', () => {
     // This function calculates the height of each line
-    // in the textarea that in a browser-independent way.
+    // in the textarea in a browser-independent way.
     let element = document.getElementById("sdp-input");
     const clone = element.cloneNode(false);
     clone.innerHTML = "A"; // Use a single character

@@ -9,6 +9,11 @@
             background-color:white;
         }
 
+        #wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
         #sdp-input {
             resize:none;
             text-align: left;
@@ -18,18 +23,36 @@
             min-height: 10lh;
             background-color: transparent;
             white-space: nowrap;
+            display: block;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid #ccc; /* The frame style */
+            pointer-events: none;      /* KEY: Click through to textarea */
+            border-radius: 1px;        /* Match textarea radius if any */
+            box-sizing: border-box;    /* Ensures border doesn't add size */            
         }
     </style>
     <script type="module" src="analyzer.js"></script>
 </head>
 <body>
     <h1>SDP Explainer</h1>
-    <textarea
-        id="sdp-input"
-        name="sdp"
-        placeholder="Paste your SDP here ..."
-        spellcheck="false"
-        oninput="onSDPInput()"
-        onclick="onSDPLineClick(event)"></textarea>
+    <div id="wrapper">
+        <textarea
+            id="sdp-input"
+            name="sdp"
+            placeholder="Paste your SDP here ..."
+            spellcheck="false"
+            oninput="onSDPInput()"
+            onclick="onSDPLineClick(event)"></textarea>
+        <div id="overlay"></div>
+    </div>
 </body>
 </html>
