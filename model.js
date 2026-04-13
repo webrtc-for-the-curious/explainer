@@ -10,8 +10,12 @@ class Description {
         this.lines = structuredClone(lines);
     }
 
-    firstLine() {
+    firstLineNumber() {
         return this.lines[0][0];
+    }
+
+    lastLineNumber() {
+        return this.lines.at(-1)[0];
     }
 
     toString() {
@@ -19,9 +23,7 @@ class Description {
     }
 };
 
-export function parseSDP() {
-    let sdp = document.getElementById("sdp-input").value;
-
+export function parseSDP(sdp) {
     if (sdp.length == 0) {
         return;
     }
@@ -48,7 +50,7 @@ export function parseSDP() {
     let descriptions = [];
     for (const s of (sections || [])) {
         let d = new Description(s);
-        descriptions[d.firstLine()] = d;
+        descriptions[d.firstLineNumber()] = d;
     }
 
     console.log(`Done parsing SDP, found ${sections.length} sections`);
