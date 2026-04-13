@@ -23,13 +23,13 @@ function onSDPInput() {
             sdpOverlays = {};
             sdpDescriptions = parseSDP(sdpinput.value);
 
-            for (const [key, description] of Object.entries(sdpDescriptions || [])) {
+            for (const [index, [key, description]] of Object.entries(sdpDescriptions || []).entries()) {
                 let sectionOverlay = document.createElement("div");
                 sectionOverlay.style.left = "0";
-                sectionOverlay.style.width = "100%";
+                sectionOverlay.style.width = `${overlay.style.width}px`;
 
-                let top = (description.firstLineNumber()) * lineHeight;
-                let height = (description.lastLineNumber() + 1) * lineHeight - top;
+                let top = description.firstLineNumber() * lineHeight + index;
+                let height = (description.lastLineNumber() + 1) * lineHeight - top - index;
                 sectionOverlay.style.top = `${top + elementOffset}px`;
                 sectionOverlay.style.height = `${height + elementOffset}px`;
 
@@ -85,9 +85,10 @@ window.addEventListener('load', () => {
     // in the textarea in a browser-independent way.
     let element = document.getElementById("sdp-input");
     let styles = window.getComputedStyle(element);
-    // Not sure where the additional 1px is coming from.
+
+    // Not sure where the additional 2px is coming from.
     // It seems to give good alignment for now.
-    elementOffset = parseInt(styles.paddingTop) + parseInt(styles.borderTop) + 1;
+    elementOffset = parseInt(styles.paddingTop) + parseInt(styles.borderTop) + 2;
     
     const clone = element.cloneNode(false);
     clone.innerHTML = "A"; // Use a single character
