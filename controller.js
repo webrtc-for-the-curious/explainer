@@ -23,6 +23,7 @@ function onSDPInput() {
             let sdpinput = document.getElementById("sdp-input");
             sdpOverlays = {};
             sdpDescriptions = parseSDP(sdpinput.value);
+            displayedLine = null;
 
             for (const [index, [key, description]] of Object.entries(sdpDescriptions || []).entries()) {
                 let sectionOverlay = document.createElement("div");
