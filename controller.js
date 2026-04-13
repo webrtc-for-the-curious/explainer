@@ -85,6 +85,8 @@ window.addEventListener('load', () => {
     // in the textarea in a browser-independent way.
     let element = document.getElementById("sdp-input");
     let styles = window.getComputedStyle(element);
+    // Not sure where the additional 1px is coming from.
+    // It seems to give good alignment for now.
     elementOffset = parseInt(styles.paddingTop) + parseInt(styles.borderTop) + 1;
     
     const clone = element.cloneNode(false);
