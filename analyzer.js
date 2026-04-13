@@ -5,6 +5,7 @@
 const NewLineRegex = /\r?\n/;
 const DescriptionLineRegex = /([^=]*)=(.*)/;
 
+let lineHeight;
 let sdpInputTimer;
 let sdpDescriptions = {};
 let displayedLine;
@@ -25,6 +26,10 @@ class Description {
 
 function parseSDP() {
     let sdp = document.getElementById("sdp-input").value;
+
+    if (sdp.length == 0) {
+        return;
+    }
 
     let sections = [];
     let currSectionKey = null;
@@ -74,12 +79,9 @@ function onSDPInput() {
 function onSDPLineClick(e) {
     let sdpInput = document.getElementById("sdp-input");
     if (sdpInput.value.length == 0) {
-        return
+        return;
     }
 
-    // The line-height must be set in css.
-    let style = window.getComputedStyle(sdpInput);
-    const lineHeight = parseInt(style.lineHeight, 10);
     const rect = sdpInput.getBoundingClientRect();
     let linepos = Math.floor((e.clientY - rect.top) / lineHeight);
     if (displayedLine != linepos) {
@@ -88,6 +90,23 @@ function onSDPLineClick(e) {
         console.log(`Description = ${description}`);
     }
 }
+
+window.addEventListener('load', () => {
+    // This function calculates the height of each line
+    // in the textarea that in a browser-independent way.
+    let element = document.getElementById("sdp-input");
+    const clone = element.cloneNode(false);
+    clone.innerHTML = "A"; // Use a single character
+    clone.style.padding = "0";
+    clone.style.border = "0";
+    clone.style.visibility = "hidden";
+    clone.style.position = "absolute";
+    clone.style.minHeight = "1lh"
+  
+    document.body.appendChild(clone);
+    lineHeight = clone.offsetHeight; // This is the line height in pixels
+    document.body.removeChild(clone);
+});
 
 window.onSDPInput = onSDPInput;
 window.onSDPLineClick = onSDPLineClick;
