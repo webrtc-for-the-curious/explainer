@@ -1,4 +1,4 @@
-import { parseSDP, mapLineToDescription } from './model.js';
+import { parseSDP, mapLineToDescription } from './parser.js';
 
 let lineHeight;
 let elementOffset;
@@ -8,22 +8,22 @@ let sdpDescriptions = {};
 let sdpOverlays = {};
 
 function onSDPInput() {
-    // clear previous timer
-    clearTimeout(sdpInputTimer);
-    // start new timer
-    sdpInputTimer = setTimeout(() => { 
+    const handleInput = () => {
         // clear current children of overlay
+        for (const [,sectionOverlay] of Object.entries(sdpOverlays)) {
+            sectionOverlay.style.backgroundColor = 'transparent';
+            sectionOverlay.style.opacity = '0.0';
+        }
         let overlay = document.getElementById("overlay");
-        overlay.style.backgroundColor = Math.random() * 0xFFFFFF;
         overlay.replaceChildren()
-            
+
+        // Parse new SDP and populate sdpOverlays
         try {
             let sdpinput = document.getElementById("sdp-input");
             sdpOverlays = {};
-
             sdpDescriptions = parseSDP(sdpinput.value);
 
-            for (const [key, description] of Object.entries(sdpDescriptions)) {
+            for (const [key, description] of Object.entries(sdpDescriptions || [])) {
                 let sectionOverlay = document.createElement("div");
                 sectionOverlay.style.left = "0";
                 sectionOverlay.style.width = "100%";
@@ -44,7 +44,17 @@ function onSDPInput() {
             sdpDescriptions = {};
             sdpOverlays = {};
         }
-    }, 700);
+    }
+
+    let sdpinput = document.getElementById("sdp-input");
+    if (sdpinput.value.length == 0) {
+        handleInput();
+    } else {
+        // clear previous timer
+        clearTimeout(sdpInputTimer);
+        // start new timer
+        sdpInputTimer = setTimeout(handleInput, 300);
+    }
 }
 
 function onSDPLineClick(e) {
