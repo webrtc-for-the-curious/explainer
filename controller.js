@@ -1,7 +1,8 @@
 import { parseSDP, mapLineToDescription } from './parser.js';
 
 let lineHeight;
-let elementOffset;
+let paddingLeft;
+let paddingTop;
 let sdpInputTimer;
 let displayedLine;
 let sdpDescriptions = {};
@@ -25,13 +26,17 @@ function onSDPInput() {
 
             for (const [index, [key, description]] of Object.entries(sdpDescriptions || []).entries()) {
                 let sectionOverlay = document.createElement("div");
-                sectionOverlay.style.left = "0";
-                sectionOverlay.style.width = `${overlay.style.width}px`;
+                let left = paddingLeft;
+                let top = description.firstLineNumber() * lineHeight + paddingTop;
+                let width = overlay.clientWidth - paddingLeft;
+                let height = (description.lastLineNumber() + 1) * lineHeight - top + paddingTop;
+                console.debug(`index ${index}, top ${top}, left ${left}, width ${width}, height ${height}`)
 
-                let top = description.firstLineNumber() * lineHeight + index;
-                let height = (description.lastLineNumber() + 1) * lineHeight - top - index;
-                sectionOverlay.style.top = `${top + elementOffset}px`;
-                sectionOverlay.style.height = `${height + elementOffset}px`;
+                sectionOverlay.style.position = "absolute"; 
+                sectionOverlay.style.left = `${left}px`;
+                sectionOverlay.style.width = `${width}px`;
+                sectionOverlay.style.top = `${top}px`;
+                sectionOverlay.style.height = `${height}px`;
 
                 sectionOverlay.id = `overlay-section-${description.firstLineNumber()}`
                 overlay.appendChild(sectionOverlay);
@@ -86,23 +91,22 @@ window.addEventListener('load', () => {
     let element = document.getElementById("sdp-input");
     let styles = window.getComputedStyle(element);
 
-    // Not sure where the additional 2px is coming from.
-    // It seems to give good alignment for now.
-    elementOffset = parseInt(styles.paddingTop) + parseInt(styles.borderTop) + 2;
-    
+    paddingLeft = parseInt(styles.paddingLeft);
+    paddingTop = parseInt(styles.paddingTop);
+
     const clone = element.cloneNode(false);
-    clone.innerHTML = "A"; // Use a single character
+    clone.innerHTML = "A\nB"; // Format for two lines to get impact of line spacing
     clone.style.padding = "0";
     clone.style.border = "0";
     clone.style.visibility = "hidden";
     clone.style.position = "absolute";
-    clone.style.minHeight = "1lh"
-    
+    clone.style.minHeight = "2lh"
+
     document.body.appendChild(clone);
-    lineHeight = clone.offsetHeight; // This is the line height in pixels
+    lineHeight = clone.offsetHeight/2; // This is the line height in pixels
     document.body.removeChild(clone);
 
-    console.log(`lineHeight=${lineHeight}, elementOffset=${elementOffset}`);
+    console.debug(`lineHeight=${lineHeight}, paddingLeft=${paddingLeft}, paddingTop=${paddingTop}`);
 });
 
 window.onSDPInput = onSDPInput;
