@@ -8,12 +8,42 @@ let displayedLine;
 let sdpDescriptions = {};
 let sdpOverlays = {};
 
+class SectionOverlay {
+    constructor(parent, first, last) {
+        this.overlay = document.createElement("div");
+
+        let left = paddingLeft;
+        let top = first * lineHeight + paddingTop;
+        let width = parent.clientWidth - paddingLeft;
+        let height = (last + 1) * lineHeight - top + paddingTop;
+        console.log(`lines [${first}, ${last}], top ${top}, left ${left}, width ${width}, height ${height}`)
+
+        this.overlay.style.position = "absolute"; 
+        this.overlay.style.left = `${left}px`;
+        this.overlay.style.width = `${width}px`;
+        this.overlay.style.top = `${top}px`;
+        this.overlay.style.height = `${height}px`;
+
+        this.overlay.id = `overlay-section-${first}`
+        parent.appendChild(this.overlay);
+    }
+
+    highlight() {
+        this.overlay.style.backgroundColor = '#2af';
+        this.overlay.style.opacity = '0.2';
+    }
+
+    clear() {
+        this.overlay.style.backgroundColor = 'transparent';
+        this.overlay.style.opacity = '0.0';
+    }
+};
+
 function onSDPInput() {
     const handleInput = () => {
         // clear current children of overlay
         for (const [,sectionOverlay] of Object.entries(sdpOverlays)) {
-            sectionOverlay.style.backgroundColor = 'transparent';
-            sectionOverlay.style.opacity = '0.0';
+            sectionOverlay.clear();
         }
         let overlay = document.getElementById("overlay");
         overlay.replaceChildren()
@@ -26,26 +56,10 @@ function onSDPInput() {
             displayedLine = null;
 
             for (const [index, [key, description]] of Object.entries(sdpDescriptions || []).entries()) {
-                let sectionOverlay = document.createElement("div");
-                let left = paddingLeft;
-                let top = description.firstLineNumber() * lineHeight + paddingTop;
-                let width = overlay.clientWidth - paddingLeft;
-                let height = (description.lastLineNumber() + 1) * lineHeight - top + paddingTop;
-                console.debug(`index ${index}, top ${top}, left ${left}, width ${width}, height ${height}`)
-
-                sectionOverlay.style.position = "absolute"; 
-                sectionOverlay.style.left = `${left}px`;
-                sectionOverlay.style.width = `${width}px`;
-                sectionOverlay.style.top = `${top}px`;
-                sectionOverlay.style.height = `${height}px`;
-
-                sectionOverlay.id = `overlay-section-${description.firstLineNumber()}`
-                overlay.appendChild(sectionOverlay);
-
-                sdpOverlays[key] = sectionOverlay;
+                sdpOverlays[key] = new SectionOverlay(overlay, description.firstLineNumber(), description.lastLineNumber());
             }
         } catch (error) {
-            console.log(`error ${error}`);
+            console.error(`error ${error}`);
             overlay.replaceChildren();
             sdpDescriptions = {};
             sdpOverlays = {};
@@ -73,15 +87,13 @@ function onSDPLineClick(e) {
     let linepos = Math.floor((e.clientY - rect.top) / lineHeight);
 
     if (displayedLine != null) {
-        sdpOverlays[displayedLine].style.backgroundColor = 'transparent';
-        sdpOverlays[displayedLine].style.opacity = '0.0';
+        sdpOverlays[displayedLine].clear();
     }
 
     let description = mapLineToDescription(sdpDescriptions, linepos);
     if (description != null) {
         displayedLine = description.firstLineNumber();
-        sdpOverlays[displayedLine].style.backgroundColor = '#2af';
-        sdpOverlays[displayedLine].style.opacity = '0.2';
+        sdpOverlays[displayedLine].highlight();
     }
     console.log(`Description = ${description}`);
 }
