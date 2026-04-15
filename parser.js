@@ -19,7 +19,21 @@ class Description {
     }
 
     toString() {
-        return this.lines.map((line) => `${line[0]}: ${line[1]}=${line[2]}`).join("\n");
+        return this.lines.map((line) => `${line[1]}=${line[2]}`).join("\n");
+    }
+
+    explain() {
+        const key = this.lines.at(0)[1];
+        const info = {
+            heading: (() => {
+                switch (key) {
+                    case 'm': return "Media Description";
+                    case 'v': return "Session Description";
+                    default: return "Unknown Section";
+                }
+            })()
+        };
+        return JSON.stringify(info);
     }
 };
 
@@ -37,7 +51,13 @@ export function parseSDP(sdp) {
 
         try {
             let [, key, value] = line.match(DescriptionLineRegex);
-            if (key == "m" || sections.length == 0) {
+            if (key == "v") {
+                if (sections.length == 0) {
+                    sections.push([ [index, key, value] ]);
+                } else {
+                    // Only one 'v' line is allowed in a SDP
+                }
+            } else if (key == "m") {
                 sections.push([ [index, key, value] ]);
             } else {
                 sections.at(-1).push([index, key, value]);

@@ -8,6 +8,11 @@ let displayedLine;
 let sdpDescriptions = {};
 let sdpOverlays = {};
 
+const explanationTemplate = {
+    "<>": "h3",
+    "text": "${heading}"
+};
+
 class SectionOverlay {
     constructor(parent, first, last) {
         this.overlay = document.createElement("div");
@@ -95,7 +100,10 @@ function onSDPLineClick(e) {
         displayedLine = description.firstLineNumber();
         sdpOverlays[displayedLine].highlight();
     }
-    console.log(`Description = ${description}`);
+
+    let explanation = document.getElementById("explanation");
+    explanation.innerHTML = ""
+    explanation.json2html(description.explain(), explanationTemplate);
 }
 
 window.addEventListener('load', () => {

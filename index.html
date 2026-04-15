@@ -9,9 +9,22 @@
             background-color:white;
         }
 
-        #inner1 {
+        #inner {
             position: relative;
             display: inline-block;
+        }
+
+        #outer {
+            display: flex;
+            gap: 30px;
+        }
+
+        #explanation {
+            position: sticky;
+            top: 5px;
+            border: 0px solid #ccc;
+            height: 0px;
+            white-space: pre-wrap;
         }
 
         #sdp-input {
@@ -40,12 +53,13 @@
             box-sizing: border-box;    /* Ensures border doesn't add size */            
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/json2html/3.3.2/json2html.min.js"></script>
     <script type="module" src="controller.js"></script>
 </head>
 <body>
     <h1>SDP Explainer</h1>
-    <div id="outer" style="display: flex; gap: 10px;">
-        <div id="inner1">
+    <div id="outer">
+        <div id="inner">
             <textarea
                 id="sdp-input"
                 name="sdp"
@@ -55,8 +69,7 @@
                 onclick="onSDPLineClick(event)"></textarea>
             <div id="overlay"></div>
         </div>
-        <div id="inner2">
-        </div>
+        <div id="explanation"></div>
     </div>
 </body>
 </html>
