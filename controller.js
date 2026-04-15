@@ -56,6 +56,12 @@ function onSDPInput() {
         // Parse new SDP and populate sdpOverlays
         try {
             let sdpinput = document.getElementById("sdp-input");
+
+            // trim white space from both ends
+            let lines = sdpinput.value.split("\n");
+            let trimmed = lines.map((element, index, array) => { return element.trim(); });
+            sdpinput.value = trimmed.join("\n");
+
             sdpOverlays = {};
             sdpDescriptions = parseSDP(sdpinput.value);
             displayedLine = null;
@@ -89,8 +95,8 @@ function onSDPLineClick(e) {
     }
 
     const rect = sdpInput.getBoundingClientRect();
-    let linepos = Math.floor((e.clientY - rect.top) / lineHeight);
-
+    let linepos = Math.floor((e.clientY - rect.top - paddingTop) / lineHeight);
+    console.log(`Y = ${e.clientY}, top = ${rect.top}, line = ${linepos}, height = ${lineHeight}`);
     if (displayedLine != null) {
         sdpOverlays[displayedLine].clear();
     }
