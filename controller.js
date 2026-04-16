@@ -59,6 +59,10 @@ function onSDPInput() {
 
             // trim white space from both ends
             let lines = sdpinput.value.split("\n");
+
+            // Setting the minHeight expands the textarea to show all the lines without a scrollbar.
+            sdpinput.style.minHeight = `${lines.length + (sdpinput.offsetHeight - sdpinput.clientHeight)/lineHeight}lh`;
+
             let trimmed = lines.map((element, index, array) => { return element.trim(); });
             sdpinput.value = trimmed.join("\n");
 
