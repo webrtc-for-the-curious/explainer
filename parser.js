@@ -23,19 +23,73 @@ class Description {
     }
 
     explain() {
-        const key = this.lines.at(0)[1];
         const info = {
-            heading: (() => {
-                switch (key) {
-                    case 'm': return "Media Description";
-                    case 'v': return "Session Description";
-                    default: return "Unknown Section";
-                }
-            })()
+            heading: "Unknown Section"
         };
         return JSON.stringify(info);
     }
 };
+
+class SessionDescription extends Description {
+    constructor(lines) {
+        super(lines);
+        this.media = [];
+    }
+
+    addMedia(media) {
+        if (!(media instanceof MediaDescription)) {
+            throw new Error("Adding non-MediaDescription object");
+        }
+        this.media.push(media);
+    }
+
+    explain() {
+        let mediaitems = []
+        for (const [ , m] of Object.entries(this.media)) {
+            console.log(m);
+            console.log(Object.getOwnPropertyNames(m))
+            mediaitems.push( { type: m.mediatype } );
+        }
+
+        const info = {
+            heading: "Session Description",
+            media: {
+                subheading: `${this.media.length} media descriptions`,
+                items: mediaitems,
+            }
+        };
+
+        return JSON.stringify(info, null, 2);
+    }
+
+}
+
+class MediaDescription extends Description {
+    constructor(session, lines) {
+        super(lines);
+        this.session = session;
+
+        // From section 5.14 of RFC 8866
+        // m=<media> <port> <proto> <fmt> ...
+        let mline = /(?<media>[^ ]*) (?<port>\d*)\/?(?<numports>\d*)? (?<proto>[^ ]*) (?<fmt>.*)/
+        const results = this.lines[0][2].match(mline);
+
+        this.mediatype = results.groups.media;
+        this.port      = results.groups.port;
+        this.numports  = results.groups.numports ?? 1;
+        this.proto     = results.groups.proto;
+        this.fmt       = results.groups.fmt;
+
+        console.dir(this);
+    }
+
+    explain() {
+        const info = {
+            heading: "Media Description"
+        };
+        return JSON.stringify(info, null, 2);
+    }
+}
 
 export function parseSDP(sdp) {
     if (sdp.length == 0) {
@@ -67,10 +121,23 @@ export function parseSDP(sdp) {
         }
     }
 
+    let session = null;
     let descriptions = [];
     for (const s of (sections || [])) {
-        let d = new Description(s);
-        descriptions[d.firstLineNumber()] = d;
+        switch (s[0][1]) {
+            case 'v':
+                if (session != null) {
+                    throw new Error("Found multiple session descriptions");
+                }
+                session = new SessionDescription(s);
+                descriptions[session.firstLineNumber()] = session;
+                break;
+            case 'm':
+                let media = new MediaDescription(session, s);
+                session.addMedia(media);
+                descriptions[media.firstLineNumber()] = media;
+                break
+        }
     }
 
     console.log(`Done parsing SDP, found ${sections.length} sections`);

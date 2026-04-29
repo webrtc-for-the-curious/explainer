@@ -112,8 +112,7 @@ function onSDPLineClick(e) {
     }
 
     let explanation = document.getElementById("explanation");
-    explanation.innerHTML = ""
-    explanation.json2html(description.explain(), explanationTemplate);
+    explanation.innerHTML = description.explain()
 }
 
 window.addEventListener('load', () => {
