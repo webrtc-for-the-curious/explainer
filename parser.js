@@ -2,12 +2,15 @@
 // RFC 8829, which established the JavaScript Session Establishment Protocol,
 // discussed the SDP keys relevant to WebRTC. RFC 9429 obsoleted RFC 8829.
 
+import { Attributes } from './attributes.js';
+
 const NewLineRegex = /\r?\n/;
 const DescriptionLineRegex = /([^=]*)=(.*)/;
 
 class Description {
     constructor(lines) {
         this.lines = structuredClone(lines);
+        this.attributes = new Attributes(lines.filter(line => line[1] === "a"))
     }
 
     firstLineNumber() {
@@ -34,6 +37,7 @@ class SessionDescription extends Description {
     constructor(lines) {
         super(lines);
         this.media = [];
+        console.dir(this);
     }
 
     addMedia(media) {
@@ -46,8 +50,6 @@ class SessionDescription extends Description {
     explain() {
         let mediaitems = []
         for (const [ , m] of Object.entries(this.media)) {
-            console.log(m);
-            console.log(Object.getOwnPropertyNames(m))
             mediaitems.push( { type: m.mediatype } );
         }
 
@@ -56,6 +58,7 @@ class SessionDescription extends Description {
             media: {
                 subheading: `${this.media.length} media descriptions`,
                 items: mediaitems,
+                attributes: this.attributes,
             }
         };
 
@@ -85,7 +88,8 @@ class MediaDescription extends Description {
 
     explain() {
         const info = {
-            heading: "Media Description"
+            heading: "Media Description",
+            attributes: this.attributes,
         };
         return JSON.stringify(info, null, 2);
     }
