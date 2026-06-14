@@ -1,3 +1,5 @@
+import ipaddr from "https://cdn.jsdelivr.net/npm/ipaddr.js@2/+esm";
+
 /*
     'candidate':         {},
     'end-of-candidates': {},
@@ -11,6 +13,7 @@
 */
 
 const attrParserMap = Object.freeze({
+    'candidate':         parseCandidate,
     'fingerprint':       parseFingerprint,
     'group':             parseGroup,
     'ice-pwd':           parseIcePassword,
@@ -18,6 +21,73 @@ const attrParserMap = Object.freeze({
     'mid':               parseMid,
     'setup':             parseSetup,
 });
+
+export const CONSTANT = {
+    CandidateType: Object.freeze({
+        Unknown:         'unknown',
+        Host:            'host',
+        ServerReflexive: 'srflx',
+        PeerReflexive:   'prflx',
+        Relayed:         'relay',
+    }),
+}
+
+class Candidate {
+    foundation  = null;
+    componentId = null;
+    transport   = null;
+    priority    = null;
+    type        = CONSTANT.CandidateType.Unknown;
+    address     = null;
+    port        = null;
+    relAddress  = null;
+    relPort     = null;
+}
+
+function parseIPAddressOrNull(addr) {
+    if (addr === undefined || addr == null) {
+        console.debug(`address is undefined or null`);
+        return null;
+    }
+    try {
+        return ipaddr.parse(addr);
+    } catch {
+        console.error(`Unable to parse IP address ${addr}`);
+        return null;
+    }
+}
+
+function parseCandidate(value, attributes) {
+    // Candidate attribute is defined in sec 5.1 of rfc-8839.
+    const ipaddress = `[0-9a-fA-F\\.\\:]`;
+    const CandidateRegex = new RegExp(
+        `(?<foundation>[a-zA-Z\\d\+\/]{1,32})`
+        + ` (?<component_id>\\d{1,3})`
+        + ` (?<transport>[^ ]+)`
+        + ` (?<priority>\\d{1,10})`
+        + ` (?<ipaddress>${ipaddress}+)`
+        + ` (?<port>\\d+)`
+        + ` typ (?<type>host|srflx|prflx|relay|[^ ]+)`
+        + ` (?:raddr (?<reladdr>${ipaddress}+) rport (?<relport>\\d+))?`
+    );
+
+    const results = value.match(CandidateRegex)
+
+    
+    var c = new Candidate();
+    c.foundation  = results.groups.foundation;
+    c.componentId = results.groups.component_id;
+    c.transport   = results.groups.transport;
+    c.priority    = results.groups.priority;
+    c.address     = parseIPAddressOrNull(results.groups.ipaddress);
+    c.port        = results.groups.port;
+    c.type        = results.groups.type;
+    c.relAddress  = parseIPAddressOrNull(results.groups.reladdr);
+    c.relPort     = results.groups.relport;
+
+    attributes['candidates'] ??= []
+    attributes['candidates'].push(c);
+}
 
 function parseFingerprint(value, attributes) {
     const [, hashfunc, hashvalstr] = value.match(/([^ ]*) (.*)/);
