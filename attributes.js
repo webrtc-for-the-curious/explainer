@@ -1,12 +1,8 @@
 import ipaddr from "https://cdn.jsdelivr.net/npm/ipaddr.js@2/+esm";
 
 /*
-    'candidate':         {},
-    'end-of-candidates': {},
     'fmtp':              {},
     'msid':              {},
-    'rtcp-mux':          {},
-    'rtcp-rsize':        {},
     'rtpmap':            {},
     'sendrecv':          {},
     'ssrc':              {},
@@ -14,11 +10,14 @@ import ipaddr from "https://cdn.jsdelivr.net/npm/ipaddr.js@2/+esm";
 
 const attrParserMap = Object.freeze({
     'candidate':         parseCandidate,
+    'end-of-candidates': v => { },
     'fingerprint':       parseFingerprint,
     'group':             parseGroup,
     'ice-pwd':           parseIcePassword,
     'ice-ufrag':         parseIceUsername,
     'mid':               parseMid,
+    'rtcp-mux':          parseRTCPOption,
+    'rtcp-rsize':        parseRTCPOption,
     'setup':             parseSetup,
 });
 
@@ -40,13 +39,12 @@ class Candidate {
     type        = CONSTANT.CandidateType.Unknown;
     address     = null;
     port        = null;
-    relAddress  = null;
-    relPort     = null;
+    raddress    = null;
+    rport       = null;
 }
 
-function parseIPAddressOrNull(addr) {
+function parseIPAddressIfValid(addr) {
     if (addr === undefined || addr == null) {
-        console.debug(`address is undefined or null`);
         return null;
     }
     try {
@@ -57,7 +55,7 @@ function parseIPAddressOrNull(addr) {
     }
 }
 
-function parseCandidate(value, attributes) {
+function parseCandidate(_key, value, attributes) {
     // Candidate attribute is defined in sec 5.1 of rfc-8839.
     const ipaddress = `[0-9a-fA-F\\.\\:]`;
     const CandidateRegex = new RegExp(
@@ -79,48 +77,57 @@ function parseCandidate(value, attributes) {
     c.componentId = results.groups.component_id;
     c.transport   = results.groups.transport;
     c.priority    = results.groups.priority;
-    c.address     = parseIPAddressOrNull(results.groups.ipaddress);
+    c.address     = parseIPAddressIfValid(results.groups.ipaddress);
     c.port        = results.groups.port;
     c.type        = results.groups.type;
-    c.relAddress  = parseIPAddressOrNull(results.groups.reladdr);
-    c.relPort     = results.groups.relport;
+    c.raddress    = parseIPAddressIfValid(results.groups.reladdr);
+    c.rport       = results.groups.relport;
 
     attributes['candidates'] ??= []
     attributes['candidates'].push(c);
 }
 
-function parseFingerprint(value, attributes) {
+function parseRTCPOption(key, _value, attributes) {
+    console.log(`parseRTCPOption: ${key}`);
+    if (key == "rtcp-mux") {
+        attributes['rtcp-mux'] = true;
+    } else if (key == 'rtcp-rsize') {
+        attributes['rtcp-rsize'] = true;
+    }
+}
+
+function parseFingerprint(_key, value, attributes) {
     const [, hashfunc, hashvalstr] = value.match(/([^ ]*) (.*)/);
     const hashval = hashvalstr.match(/[0-9a-fA-F]+/g);
     attributes['hash-algorithm'] = hashfunc;
     attributes['hash-digest'] = hashval.map(hex => parseInt(hex, 16));
 }
 
-function parseGroup(value, attributes) {
+function parseGroup(_key, value, attributes) {
     const [, idliststr] = value.match(/BUNDLE (.*)/);
     attributes['bundle'] = idliststr.match(/[0-9]+/g);
 }
 
-function parseSetup(value, attributes) {
+function parseSetup(_key, value, attributes) {
     attributes['setup-role'] = value;
 }
 
-function parseMid(value, attributes) {
+function parseMid(_key, value, attributes) {
     attributes['mid'] = value;
 }
 
-function parseIceUsername(value, attributes) {
+function parseIceUsername(_key, value, attributes) {
     attributes['ice-ufrag'] = value;
 }
 
-function parseIcePassword(value, attributes) {
+function parseIcePassword(_key, value, attributes) {
     attributes['ice-pass'] = value;
 }
 
 function parseAttribute(key, value, attributes) {
     const fn = attrParserMap[key];
     if (fn) {
-        fn(value, attributes);
+        fn(key, value, attributes);
     } else {
         console.log(`unknown key ${key}`);
     }
