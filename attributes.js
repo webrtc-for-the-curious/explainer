@@ -3,7 +3,6 @@ import ipaddr from "https://cdn.jsdelivr.net/npm/ipaddr.js@2/+esm";
 /*
     'fmtp':              {},
     'msid':              {},
-    'rtpmap':            {},
     'sendrecv':          {},
     'ssrc':              {},
 */
@@ -18,6 +17,7 @@ const attrParserMap = Object.freeze({
     'mid':               parseMid,
     'rtcp-mux':          parseRTCPOption,
     'rtcp-rsize':        parseRTCPOption,
+    'rtpmap':            parseRTPMap,
     'setup':             parseSetup,
 });
 
@@ -41,6 +41,20 @@ class Candidate {
     port        = null;
     raddress    = null;
     rport       = null;
+}
+
+class RTPMap {
+    payloadType  = null;
+    encodingName = null;
+    clockRate    = null;
+    channels     = null;
+
+    constructor(pt, encname, clock, ch) {
+        this.payloadType  = pt;
+        this.encodingName = encname;
+        this.clockRate    = clock;
+        this.channels     = ch;
+    }
 }
 
 function parseIPAddressIfValid(addr) {
@@ -70,7 +84,6 @@ function parseCandidate(_key, value, attributes) {
     );
 
     const results = value.match(CandidateRegex)
-
     
     var c = new Candidate();
     c.foundation  = results.groups.foundation;
@@ -87,8 +100,20 @@ function parseCandidate(_key, value, attributes) {
     attributes['candidates'].push(c);
 }
 
+function parseRTPMap(_key, value, attributes) {
+    // rtpmap attribute is defined in section 6.6 of rfc-8866.
+    const RTPMapRegex = new RegExp(
+        `(?<payload_type>\\d+) (?<encoding_name>[^\\/]+)\\/(?<clock_rate>\\d+)\\/?(?<channels>\\d+)?`
+    );
+
+    const results = value.match(RTPMapRegex);
+    attributes['rtpmap'] = new RTPMap(results.groups.payload_type,
+                                      results.groups.encoding_name,
+                                      results.groups.clock_rate,
+                                      results.groups.channels);
+}
+
 function parseRTCPOption(key, _value, attributes) {
-    console.log(`parseRTCPOption: ${key}`);
     if (key == "rtcp-mux") {
         attributes['rtcp-mux'] = true;
     } else if (key == 'rtcp-rsize') {
